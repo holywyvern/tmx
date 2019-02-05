@@ -8,14 +8,20 @@ option(DOC_HTML "Build html help with Sphinx" Off)
 option(DOC_SINGLEHTML "Build html single page help with Sphinx" Off)
 find_program(SPHINX_EXECUTABLE NAMES sphinx-build DOC "Sphinx Documentation Builder (sphinx-doc.org)")
 
-set(HTML_THEME "default" CACHE STRING "HTML Theme to use eg: sphinx_rtd_theme")
-mark_as_advanced(HTML_THEME)
+set(DOC_HTML_THEME "default" CACHE STRING "HTML Theme to use eg: sphinx_rtd_theme")
+mark_as_advanced(DOC_HTML_THEME)
+set(DOC_CODESTYLE "sphinx" CACHE STRING "The name of the Pygments (syntax highlighting) style to use")
+mark_as_advanced(DOC_CODESTYLE)
 
 if(NOT DOC_HTML AND NOT DOC_SINGLEHTML)
   return()
 elseif(NOT SPHINX_EXECUTABLE)
   message(FATAL_ERROR "SPHINX_EXECUTABLE (sphinx-build) is not found!")
 endif()
+
+set(DOC_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+set(DOC_RELEASE "${PROJECT_VERSION}")
+string(TIMESTAMP DOC_COPYRIGHT "2019-%Y, libTMX documentation authors" UTC)
 
 configure_file(conf.py.in conf.py @ONLY)
 

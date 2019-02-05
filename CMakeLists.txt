@@ -11,6 +11,8 @@ set(BUILD_VERSION "${PROJECT_VERSION}")
 option(WANT_ZLIB "use zlib (ability to decompress layers data) ?" on)
 option(BUILD_SHARED_LIBS "Build shared libraries (dll / so)" off)
 
+add_subdirectory(doc)
+
 #-----------#
 #    Env
 #-----------#
