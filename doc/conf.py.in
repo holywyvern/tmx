@@ -10,9 +10,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'libTMX'
-copyright = u'@DOC_COPYRIGHT@'
-version = '@DOC_VERSION@'
-release = '@DOC_RELEASE@'
+copyright = u'@doc_copyright@'
+version = '@doc_version@'
+release = '@doc_release@'
 
 language = None
 pygments_style = '@DOC_CODESTYLE@'

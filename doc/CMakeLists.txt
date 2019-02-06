@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(tmxHelp NONE)
+project(tmxDocumentation NONE)
 
 # -- CONFIGURE --
 
@@ -19,9 +19,11 @@ elseif(NOT SPHINX_EXECUTABLE)
   message(FATAL_ERROR "SPHINX_EXECUTABLE (sphinx-build) is not found!")
 endif()
 
-set(DOC_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
-set(DOC_RELEASE "${PROJECT_VERSION}")
-string(TIMESTAMP DOC_COPYRIGHT "2019-%Y, libTMX documentation authors" UTC)
+if(tmx_VERSION)
+  set(doc_version "${tmx_VERSION_MAJOR}.${tmx_VERSION_MINOR}")
+  set(doc_release "${tmx_VERSION}")
+endif()
+string(TIMESTAMP doc_copyright "2019-%Y, libTMX documentation authors" UTC)
 
 configure_file(conf.py.in conf.py @ONLY)
 
