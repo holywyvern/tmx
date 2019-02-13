@@ -271,7 +271,7 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: unsigned int backgroundcolor
 
-      Global background color, encoded in an integer, 4 bytes: ARGB.
+      Global background colour, encoded in an integer, 4 bytes: ARGB.
 
    .. c:member:: enum tmx_map_renderorder renderorder
 
@@ -331,7 +331,47 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
       Content of the layer, as there are several types of layers (tile, object, image, ...) the content is different for
       each type.
-      You should check the value of member :c:member:`tmx_layer.type` to use the correct union member.
+
+      .. note::
+         You should check the value of member :c:member:`tmx_layer.type` to use the correct union member.
+
+      .. c:type:: union layer_content
+
+         .. c:member:: int32_t *gids
+
+            Array of tile GID.
+            This layer is a tile layer.
+
+            Example: iterate on all cells, from left to right, top to bottom:
+
+            .. code-block:: c
+
+               for(int cell_y = 0; cell_y < map->height; cell_y++) {
+                  for(int cell_x = 0; cell_x < map->width; cell_x++) {
+                     int32_t gid = layer->content.gids[cell_y * map->width + cell_x];
+                     /* Draw tile operation... */
+                  }
+               }
+
+            Example: Direct access to the GID of a cell:
+
+            .. code-block:: c
+
+               int32_t get_GID_at(tmx_layer *layer, unsigned int map_width, unsigned int x, unsigned int y) {
+                  return layer->content.gids[y * map_width + x];
+               }
+
+         .. c:member:: tmx_object_group *objgr
+
+            This layer is an object group.
+
+         .. c:member:: tmx_image *image
+
+            This layer is an image layer.
+
+         .. c:member:: tmx_layer *group_head
+
+            This layer is a group of layer, pointer to the head of a linked-list of children layers.
 
    .. c:member:: tmx_user_data user_data
 
@@ -461,66 +501,281 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
 .. c:type:: tmx_object_group
 
-   .. c:member:: TODO
+   .. c:member:: unsigned int color
 
-      
+      Colour of the object group, encoded in an integer, 4 bytes: ARGB.
 
-.. c:type:: tmx_objecttmx_object
+   .. c:member:: enum tmx_objgr_draworder draworder
 
-   .. c:member:: TODO
+      Draw order, see :c:type:`tmx_objgr_draworder`.
 
-      
+   .. c:member:: tmx_object *head
+
+      Head of the object linked list, see :c:type:`tmx_object`.
+
+.. c:type:: tmx_object
+
+   .. c:member:: unsigned int id
+
+      Object ID.
+
+   .. c:member:: enum tmx_obj_type obj_type
+
+      Type of object, see :c:type:`tmx_obj_type`, tells you which member to use in :c:member:`tmx_object.content`.
+
+   .. c:member:: double x
+
+      Upper-left x coordinate of the object in pixels.
+
+   .. c:member:: double y
+
+      Upper-left y coordinate of the object in pixels.
+
+   .. c:member:: double width
+
+      Width of the object in pixels.
+
+   .. c:member:: double height
+
+      Height of the object in pixels.
+
+   .. c:member:: union object_content content
+
+      Content of the object, as there are several types of objects (tile, square, polygon, ...) the content is different
+      for each type.
+
+      .. note::
+         You should check the value of member :c:member:`tmx_object.type` to use the correct union member.
+
+      .. c:type:: union object_content
+
+         .. c:member:: int gid
+
+            GID of the tile for Tile objects.
+
+         .. c:member:: tmx_shape *shape
+
+            List of points for polygon and polyline objects, see :c:type:`tmx_shape`.
+
+         .. c:member:: tmx_text *text
+
+            Text and formatting for text objects, see :c:type:`tmx_text`.
+
+   .. c:member:: int visible
+
+      Boolean, visibility of the object (0 = false, any other value = true).
+
+   .. c:member:: double rotation
+
+      Rotation in degrees clockwise.
+
+   .. c:member:: char *name
+
+      Name (user defined).
+
+   .. c:member:: char *type
+
+      Type (user defined).
+
+   .. c:member:: tmx_template *template
+
+      Optional object template, holds default values that this object overrides.
+
+   .. c:member:: tmx_properties *properties
+
+      Properties of the object, see :c:type:`tmx_properties`.
+
+   .. c:member:: tmx_object *next
+
+      Next element of the linked-list, if NULL then you reached the last element.
 
 .. c:type:: tmx_shape
 
-   .. c:member:: TODO
+   Points for object types Polyline and Polygon.
 
-      
+   .. c:member:: double **points
+
+      Array of points (x,y coordinate couples).
+
+      Usage:
+
+      .. code-block:: c
+
+         double x, y;
+         for(int it = 0; it < shape->points_len; it++) {
+           x = shape->point[it][0];
+           y = shape->point[it][1];
+           /* Draw operation... */
+         }
+
+   .. c:member:: int points_len
+
+      Length of the :c:member:`tmx_shape.points` array.
 
 .. c:type:: tmx_text
 
-   .. c:member:: TODO
+   For object type Text.
 
-      
+   .. c:member:: char *fontfamily
+
+      Name of font to use.
+
+   .. c:member:: int pixelsize
+
+      Size of font in pixels.
+
+   .. c:member:: unsigned int color
+
+      Colour of the text, encoded in an integer, 4 bytes: ARGB.
+
+   .. c:member:: int wrap
+
+      Boolean, word wrapping (0 = false, any other value = true).
+
+   .. c:member:: int bold
+
+      Boolean, bold text (0 = false, any other value = true).
+
+   .. c:member:: int italic
+
+      Boolean, italic text (0 = false, any other value = true).
+
+   .. c:member:: int underline
+
+      Boolean, underlined text (0 = false, any other value = true).
+
+   .. c:member:: int strikeout
+
+      Boolean, striked out text (0 = false, any other value = true).
+
+   .. c:member:: int kerning
+
+      Boolean, use kerning (0 = false, any other value = true).
+
+   .. c:member:: enum tmx_horizontal_align halign
+
+      Horizontal alignment of text, see :c:type:`tmx_horizontal_align`.
+
+   .. c:member:: enum tmx_vertical_align valign
+
+      Vertical alignment of text, see :c:type:`tmx_vertical_align`.
+
+   .. c:member:: char *text
+
+      String to render.
 
 .. c:type:: tmx_template
 
-   .. c:member:: TODO
+   Object template.
 
-      
+   .. c:member:: int is_embedded
+
+      Private member used internally to free this object template.
+
+   .. c:member:: tmx_tileset_list *tileset_ref
+
+      Head of the linked-list of templates referenced by this object template, may be NULL.
+
+   .. c:member:: tmx_object *object
+
+      Template object.
 
 .. c:type:: tmx_anim_frame
 
-   .. c:member:: TODO
+   .. c:member:: unsigned int tile_id
 
-      
+      LID of the :c:type:`tmx_tile` to be drawn during this frame.
+
+   .. c:member:: unsigned int duration
+
+      Duration of this frame in milliseconds.
 
 .. c:type:: tmx_image
 
-   .. c:member:: TODO
+   .. c:member:: char *source
 
-      
+      Path to the image file (user defined, should be relative to the location of this map on the file system).
+
+   .. c:member:: unsigned int trans
+
+      Transparency colour, encoded in an integer, 3 bytes: RGB.
+
+   .. c:member:: int uses_trans
+
+      Boolean, if the transparency should (0 = false, any other value = true).
+
+   .. c:member:: unsigned long width
+
+      The image width in pixels.
+
+   .. c:member:: unsigned long height
+
+      The image height in pixels.
+
+   .. c:member:: void *resource_image
+
+      NULL unless the :ref:`image-autoload-autofree` callback functions are set, then holds the value returned by
+      :c:data:`tmx_img_load_func`.
 
 .. c:type:: tmx_properties
 
-   .. c:member:: TODO
-
-      
+   This type is private, you can manipulate it using the :c:func:`tmx_get_property` and :c:func:`tmx_property_foreach`
+   functions.
 
 .. c:type:: tmx_property
 
-   .. c:member:: TODO
+   .. c:member:: char *name
 
-      
+      Name of the property (user defined).
 
-.. c:type:: tmx_property_value
+   .. c:member:: enum tmx_property_type type
 
-   .. c:member:: TODO
+      Type of the property (String, Boolean, Path, ...), see :c:type:`tmx_property_type`,
+      tells you which member to use in :c:member:`tmx_property.value`.
 
-      
+   .. c:member:: union tmx_property_value value
 
-.. c:type:: tmx_user_data
+      Value of this property.
 
-   .. c:member:: TODO
+      .. note::
+         You should check the value of member :c:member:`tmx_property.type` to use the correct union member.
 
-      
+      .. c:type:: union tmx_property_value
+
+         .. c:member:: int integer
+
+            Integer.
+
+         .. c:member:: int boolean
+
+            Boolean (0 = false, any other value = true).
+
+         .. c:member:: float decimal
+
+            Float.
+
+         .. c:member:: char *string
+
+            String.
+
+         .. c:member:: char *file
+
+            String (path).
+
+         .. c:member:: unsigned int color
+
+            Colour, encoded in an integer, 4 bytes: ARGB.
+
+.. c:type:: union tmx_user_data
+
+   .. c:member:: int integer
+
+      Integer.
+
+   .. c:member:: float decimal
+
+      Float.
+
+   .. c:member:: void *pointer
+
+      Pointer.

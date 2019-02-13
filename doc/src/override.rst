@@ -45,6 +45,8 @@ Example, compare how many times memory has been allocated vs freed to detect a m
      }
    }
 
+.. _image-autoload-autofree:
+
 Image Autoload/Autofree
 -----------------------
 
@@ -54,6 +56,7 @@ map source.
 .. c:var:: void* (*tmx_img_load_func) (const char *path)
 
    Load the resource (image) at the given path, return a pointer to void.
+   The returned value is then stored in a :c:member:`tmx_image.resource_image`.
 
 .. c:var:: void (*tmx_img_free_func) (void *address)
 

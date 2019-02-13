@@ -113,7 +113,8 @@ Utilities
 
 .. c:function:: tmx_tile* tmx_get_tile(tmx_map *map, unsigned int gid)
 
-   Deprecated, use `tmx_map->tiles[gid]`.
+   .. deprecated:: 1.0
+      use `map->tiles[gid]` instead, see :c:member:`tmx_map.tiles`.
 
 .. c:function:: tmx_property* tmx_get_property(tmx_properties *hash, const char *key)
 
