@@ -17,6 +17,156 @@ Prerequisites
   server via HTTP), and the `xmlreader api`_ to parse XML documents, and the `hash api`_ as a hashtable implementation.
 * The `CMake`_ build system builder.
 
+Get the source code
+-------------------
+
+Fetch the source code from the `releases page`_ on github (you can also use git and fetch the needed tag).
+
+Building libTMX
+---------------
+
+This documentation page only covers the building of **libTMX** using CMake and Make, but keep in mind that CMake being
+a build system builder, it is able to generate build scripts and project files for many other tools such as Ninja,
+Visual Studio, NMake, ... see the CMake `documentation on generators`_.
+
+Configure using cmake
+^^^^^^^^^^^^^^^^^^^^^
+
+First, it is recommended to create a sub directory (known as the *binary dir*) to generate the build system.
+
+CMake stores the configuration for the build in a cache file: CMakeCache.txt, this file will be created at the first
+invocation.
+
+CMake has a GUI (Windows only) and a ncurses UI (Linux/BSD/MacOS) to ease the editing of its cache, you can also
+manipulate this cache using CMake's command line interface. See the `running CMake page`_.
+
+**libTMX**'s cmake script declares two cache variables to configure the build:
+
++-------------------+-----------------------------------------------------------------------+
+| Cache Variable    | Description                                                           |
++===================+=======================================================================+
+| WANT_ZLIB         | Link with zlib (ability to decompress layers data).                   |
++-------------------+-----------------------------------------------------------------------+
+| BUILD_SHARED_LIBS | Build shared libraries (dll / so), static libraries are always built. |
++-------------------+-----------------------------------------------------------------------+
+
+Default cache variables of interest:
+
++----------------------+-------------------------------------------------------+
+| Cache Variable       | Description                                           |
++======================+=======================================================+
+| CMAKE_BUILD_TYPE     | Specifies the build type (Debug, Release, ...).       |
++----------------------+-------------------------------------------------------+
+| CMAKE_INSTALL_PREFIX | Install directory.                                    |
++----------------------+-------------------------------------------------------+
+| LibXml2_ROOT         | Custom search path to find libxml2 (lib and headers). |
++----------------------+-------------------------------------------------------+
+| ZLIB_ROOT            | Custom search path to find ZLib (lib and headers).    |
++----------------------+-------------------------------------------------------+
+
+Compile and install
+^^^^^^^^^^^^^^^^^^^
+
+Once CMake has sucessfully generated the MakeFile, then run the usual:
+
+.. code-block:: sh
+
+   make && make install
+
+Building the dependencies
+-------------------------
+
+Libxml2
+^^^^^^^
+
+Libxml2 pulls some unnecessary dependencies: ICU, iconv, ... as **libTMX** does not need these unicode libraries (unless
+your software does) you may safely disable support along all the unused features:
+
+Recommended configuration (Unixes):
+
+.. code-block:: sh
+
+   ./autogen.sh \
+       --prefix=/usr/local \
+       --without-c14n \
+       --without-catalog \
+       --without-debug \
+       --without-docbook \
+       --without-ftp \
+       --without-http \
+       --without-html \
+       --without-xpath \
+       --without-xptr \
+       --without-xinclude \
+       --without-iconv \
+       --without-icu \
+       --without-iso8859x \
+       --without-zlib \
+       --without-lzma \
+       --without-debug \
+       --without-mem_debug \
+       --without-run_debug \
+       --without-schemas \
+       --without-schematron \
+       --without-regexps \
+       --without-modules \
+       --without-writer \
+       --without-pattern \
+       --without-push \
+       --without-valid \
+       --without-sax1 \
+       --without-legacy \
+       --without-output \
+       --without-python \
+       --with-tree \
+       --with-writer \
+       --with-reader
+
+On Windows:
+
+.. code-block:: batch
+
+   cscript configure.js^
+       trio=no^
+       ftp=no^
+       http=no^
+       html=no^
+       c14n=no^
+       catalog=no^
+       docb=no^
+       xpath=no^
+       xptr=no^
+       xinclude=no^
+       iconv=no^
+       icu=no^
+       iso8859x=no^
+       zlib=no^
+       lzma=no^
+       debug=no^
+       xml_debug=no^
+       mem_debug=no^
+       run_debug=no^
+       schemas=no^
+       schematron=no^
+       regexps=no^
+       modules=no^
+       tree=yes^
+       reader=yes^
+       writer=yes^
+       walker=no^
+       pattern=no^
+       push=no^
+       valid=no^
+       sax1=no^
+       legacy=no^
+       output=no^
+       python=no
+
+ZLib
+^^^^
+Building ZLib requires no special configuration.
+
+
 .. _Clang: https://clang.llvm.org/
 .. _GCC: https://gcc.gnu.org/
 .. _ZLib: http://zlib.net/
@@ -25,24 +175,6 @@ Prerequisites
 .. _xmlreader api: http://xmlsoft.org/html/libxml-xmlreader.html
 .. _hash api: http://xmlsoft.org/html/libxml-hash.html
 .. _CMake: https://cmake.org/
-
-Building
---------
-
-Neque numquam voluptas consequatur vitae aliquid id. Porro excepturi tempore
-facilis. Sapiente aut inventore eos dolor laborum neque. Quia laborum totam sunt
-omnis non sed fugit laborum. Molestias architecto ea alias fuga et non omnis.
-Laborum temporibus velit enim.
-
-Velit veritatis impedit dolor aut consequatur. Esse quod rerum ex. Corporis
-magni praesentium optio. Et quam ducimus ex incidunt sapiente. Tempore quasi rem
-illum atque et ab inventore enim. Iste eos delectus deleniti nostrum autem
-debitis.
-
-Windows
--------
-
-Consequuntur qui cum similique quo quas rerum. Voluptates vero voluptas
-repellendus possimus magnam labore non qui. Quis culpa molestiae error sit est
-et molestiae et. Aperiam voluptatem a neque est. Necessitatibus amet aut sed ut.
-Numquam reprehenderit illum omnis ratione.
+.. _releases page: https://github.com/baylej/tmx/releases
+.. _documentation on generators: https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
+.. _running CMake page: https://cmake.org/runningcmake/
