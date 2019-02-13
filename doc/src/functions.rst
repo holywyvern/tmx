@@ -128,14 +128,3 @@ Utilities
 
    Call the given callback function for each properties, userdata is forwarded as-is.
    See :c:type:`tmx_property_functor`.
-
-Error reporting
----------------
-
-.. c:function:: void tmx_perror(const char*)
-
-   Print to stderr a string describing the last error.
-
-.. c:function:: const char* tmx_strerr(void)
-
-   Return a string describing the last error.

@@ -43,4 +43,4 @@ See the dumper example (`examples/dumper/dumper.c`) for an in-depth usage of TMX
 
 ### Help
 
-See the [Wiki](https://github.com/baylej/tmx/wiki/).
+See the [Documentation](http://libtmx.rtfd.io/).

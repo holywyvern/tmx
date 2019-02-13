@@ -1,6 +1,10 @@
 Building libTMX
 ===============
 
+.. warning::
+   As **libTMX** has an ever-changing API (and ABI) therefore the recommended way to use it is to directly incorporate
+   it in the sources of your project.
+
 Prerequisites
 -------------
 

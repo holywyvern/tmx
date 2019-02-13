@@ -14,7 +14,7 @@ libTMX has an ever-changing API (and ABI) therefore the recommended way to use i
 sources of your project.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    getting-started
    renderer-from-scratch
@@ -22,6 +22,7 @@ sources of your project.
    datastructure
    functions
    override
+   error
 
 Indices and tables
 ==================
