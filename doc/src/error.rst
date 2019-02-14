@@ -71,7 +71,7 @@ Error functions
    NULL terminator).
    Returned value is never NULL.
 
-Example error management
+Error management example
 ------------------------
 
 This is an example of how you could handle errors:

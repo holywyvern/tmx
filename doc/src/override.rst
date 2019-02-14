@@ -50,8 +50,8 @@ Example, compare how many times memory has been allocated vs freed to detect a m
 Image Autoload/Autofree
 -----------------------
 
-Set (there is no default implementation) load and free functions to load the image automatically as they are read in the
-map source.
+Set (there is no default implementation) load and free functions to load/free images automatically as they are read in
+the map source.
 
 .. c:var:: void* (*tmx_img_load_func) (const char *path)
 

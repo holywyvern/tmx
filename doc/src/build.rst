@@ -80,7 +80,7 @@ Libxml2
 ^^^^^^^
 
 Libxml2 pulls some unnecessary dependencies: ICU, iconv, ... as **libTMX** does not need these unicode libraries (unless
-your software does) you may safely disable support along all the unused features:
+your software does) you may safely disable support along with all the unused features:
 
 Recommended configuration (Unixes):
 
@@ -122,6 +122,8 @@ Recommended configuration (Unixes):
        --with-writer \
        --with-reader
 
+To generate debug symbols, remove ``--without-debug`` and add ``--with-debug``.
+
 On Windows:
 
 .. code-block:: batch
@@ -161,6 +163,12 @@ On Windows:
        legacy=no^
        output=no^
        python=no
+
+Creates a NMake build script. To create a MakeFile for MinGW, add: ``compiler=mingw``.
+
+To create static libraries using MSVC, add: ``cruntime=/MT``.
+
+To generate debug symbols, set ``debug=yes``.
 
 ZLib
 ^^^^

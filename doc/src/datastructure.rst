@@ -9,6 +9,8 @@ The Data Structure
 Definitions
 -----------
 
+.. _tile-flip-flags:
+
 Tiled use the 3 leftmost bits to store if a tile is flipped.
 
 .. c:macro:: TMX_FLIPPED_HORIZONTALLY
@@ -115,7 +117,7 @@ Enumerations
 
 .. c:type:: enum tmx_layer_type
 
-   Type of layer.
+   Type of :term:`layer`.
 
    +------------+------------------------------------------------------+
    | Layer type | Description                                          |
@@ -133,8 +135,8 @@ Enumerations
 
 .. c:type:: enum tmx_objgr_draworder
 
-   Whether the objects are drawn according to the order of appearance ("index") or sorted by their y-coordinate
-   ("topdown").
+   Whether the :term:`objects <object>` are drawn according to the order of appearance ("index") or sorted by their
+   y-coordinate ("topdown").
 
    +------------------+------------------------------------------------------+
    | Object draworder | Description                                          |
@@ -149,7 +151,7 @@ Enumerations
 
 .. c:type:: enum tmx_obj_type
 
-   Type of object.
+   Type of :term:`object`.
 
    +-------------+----------------------------------------------------------+
    | Object type | Description                                              |
@@ -230,11 +232,12 @@ Enumerations
 Data Structures
 ---------------
 
-The datastructure is a tree, just like the source document, from the root (:c:type:`tmx_map`) you can access everything.
+The datastructure is a :term:`tree`, just like the source :term:`XML` document, from the root (:c:type:`tmx_map`)
+you can access everything.
 
 .. c:type:: tmx_map
 
-   The root of the datastructure.
+   The :term:`root <Tree>` of the datastructure.
 
    .. c:member:: enum tmx_map_orient orient
 
@@ -283,11 +286,11 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_tileset_list *ts_head
 
-      Head of the tileset linked list, see :c:type:`tmx_`.
+      Head of the tileset :term:`linked list`, see :c:type:`tmx_`.
 
    .. c:member:: tmx_layer *ly_head
 
-      Head of the layers linked list, see :c:type:`tmx_layer`.
+      Head of the layers :term:`linked list`, see :c:type:`tmx_layer`.
 
    .. c:member:: unsigned int tilecount
 
@@ -303,9 +306,11 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
 .. c:type:: tmx_layer
 
+   :term:`Layer` data.
+
    .. c:member:: char *name
 
-      Name of the layer (user defined).
+      Name of the :term:`layer` (user defined).
 
    .. c:member:: double opacity
 
@@ -329,8 +334,8 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: union layer_content content
 
-      Content of the layer, as there are several types of layers (tile, object, image, ...) the content is different for
-      each type.
+      Content of the layer, as there are several types of layers (tile, object, image, ...),
+      the content is different for each type.
 
       .. note::
          You should check the value of member :c:member:`tmx_layer.type` to use the correct union member.
@@ -339,8 +344,10 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
          .. c:member:: int32_t *gids
 
-            Array of tile GID.
-            This layer is a tile layer.
+            Array of layer :term:`cells <Cell>`.
+
+            .. warning::
+               GID=0 (zero) is a special :term:`GID` which means that this :term:`cell` is empty!
 
             Example: iterate on all cells, from left to right, top to bottom:
 
@@ -348,16 +355,17 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
                for(int cell_y = 0; cell_y < map->height; cell_y++) {
                   for(int cell_x = 0; cell_x < map->width; cell_x++) {
-                     int32_t gid = layer->content.gids[cell_y * map->width + cell_x];
+                     int32_t cell = layer->content.gids[cell_y * map->width + cell_x];
+                     int32_t GID = cell & TMX_FLIP_BITS_REMOVAL;
                      /* Draw tile operation... */
                   }
                }
 
-            Example: Direct access to the GID of a cell:
+            Example: Direct access to the cell:
 
             .. code-block:: c
 
-               int32_t get_GID_at(tmx_layer *layer, unsigned int map_width, unsigned int x, unsigned int y) {
+               int32_t get_cell_at(tmx_layer *layer, unsigned int map_width, unsigned int x, unsigned int y) {
                   return layer->content.gids[y * map_width + x];
                }
 
@@ -371,7 +379,7 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
          .. c:member:: tmx_layer *group_head
 
-            This layer is a group of layer, pointer to the head of a linked-list of children layers.
+            This layer is a group of layer, pointer to the head of a :term:`linked list` of children layers.
 
    .. c:member:: tmx_user_data user_data
 
@@ -383,9 +391,11 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_layer *next
 
-      Next element of the linked-list, if NULL then you reached the last element.
+      Next element of the :term:`linked list`, if NULL then you reached the last element.
 
 .. c:type:: tmx_tileset_list
+
+   In map :term:`tileset` data.
 
    .. c:member:: int is_embedded
 
@@ -401,9 +411,11 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_tileset_list *next
 
-      Next element of the linked-list, if NULL then you reached the last element.
+      Next element of the :term:`linked list`, if NULL then you reached the last element.
 
 .. c:type:: tmx_tileset
+
+   :term:`Tileset` data, usually loaded from an external :term:`TSX` file.
 
    .. c:member:: char *name
 
@@ -455,9 +467,18 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
 .. c:type:: tmx_tile
 
+   :term:`Tile` data.
+
    .. c:member:: unsigned int id
 
-      LID (Local ID) of the tile, unsigned int GID = :c:member:`tmx_tileset.firstgid` + LID;
+      :term:`LID` (Local ID) of the tile.
+
+      To compute the :term:`GID` in a map from the LID from a tileset, add that LID with the
+      :c:member:`tmx_tileset_list.firstgid` of its in map tileset reference.
+
+      .. code-block:: c
+
+         unsigned int GID = tileset_list->firstgid + LID;
 
    .. c:member:: tmx_tileset *tileset
 
@@ -473,7 +494,7 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_image *image
 
-      Image for this tile, may be NULL if this tileset use a single image (atlas) for all tiles.
+      Image for this tile, may be NULL if this tileset use a single image (:term:`atlas`) for all tiles.
 
    .. c:member:: tmx_object *collision
 
@@ -511,9 +532,11 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_object *head
 
-      Head of the object linked list, see :c:type:`tmx_object`.
+      Head of the object :term:`linked list`, see :c:type:`tmx_object`.
 
 .. c:type:: tmx_object
+
+   :term:`Object` data.
 
    .. c:member:: unsigned int id
 
@@ -587,7 +610,7 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_object *next
 
-      Next element of the linked-list, if NULL then you reached the last element.
+      Next element of the :term:`linked list`, if NULL then you reached the last element.
 
 .. c:type:: tmx_shape
 
@@ -674,7 +697,7 @@ The datastructure is a tree, just like the source document, from the root (:c:ty
 
    .. c:member:: tmx_tileset_list *tileset_ref
 
-      Head of the linked-list of templates referenced by this object template, may be NULL.
+      Head of the :term:`linked list` of templates referenced by this object template, may be NULL.
 
    .. c:member:: tmx_object *object
 
