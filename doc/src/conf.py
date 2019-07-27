@@ -7,6 +7,7 @@ from datetime import date
 import re
 import fileinput
 
+extensions = ['sphinx_tabs.tabs']
 source_suffix = '.rst'
 master_doc = 'index'
 
