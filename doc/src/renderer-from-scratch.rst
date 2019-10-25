@@ -19,6 +19,7 @@ display (window), and the main loop.
 
    .. code-tab:: c SDL 2
 
+         #include <stdio.h>
          #include <tmx.h>
          #include <SDL.h>
          #include <SDL_events.h>
@@ -116,7 +117,7 @@ display (window), and the main loop.
              return 1;
            }
 
-           timer = al_create_timer(1.0/30.0); /* 30 Frames per seconds */
+           timer = al_create_timer(1.0/30.0);
            if (!timer) {
              fputs("Cannot create a timer", stderr);
              return 1;
@@ -141,8 +142,31 @@ display (window), and the main loop.
 
    .. code-tab:: c raylib
 
-         void raylib_renderer() {}
+         #include <stdio.h>
+         #include <tmx.h>
+         #include <raylib.h>
 
+         #define DISPLAY_H 480
+         #define DISPLAY_W 640
+
+         int main(int argc, char **argv) {
+           InitWindow(DISPLAY_W, DISPLAY_H, "RPG");
+           if (!IsWindowReady()) {
+             fputs("Cannot create a window", stderr);
+           }
+
+           SetTargetFPS(30);
+
+           while (!WindowShouldClose()) {
+             BeginDrawing();
+             ClearBackground(BLACK);
+             EndDrawing();
+           }
+
+           CloseWindow();
+
+           return 0;
+         }
 
 
 Testing the tab group functionality:
