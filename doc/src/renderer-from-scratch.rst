@@ -9,6 +9,11 @@ We will be using a map from Tiled's examples: `rpg/island.tmx`_. That particular
 defined in its own :term:`TSX` file, several :term:`Layers <Layer>`, :term:`Objects <Object>` and animated
 :term:`Tiles <Tile>`.
 
+.. _SDL 2: https://www.libsdl.org/
+.. _Allegro 5: https://liballeg.org/
+.. _raylib: https://www.raylib.com/
+.. _rpg/island.tmx: https://github.com/bjorn/tiled/tree/master/examples/rpg
+
 Initial set-up
 --------------
 
@@ -169,7 +174,18 @@ display (window), and the main loop.
          }
 
 
-Testing the tab group functionality:
+Now we can load the map and check for errors. libTMX offers :ref:`several means to load a map <load-functions>`,
+we will be using the simple :c:func:`tmx_load` function.
+
+.. code-block:: c
+
+   tmx_map *map = tmx_load(argv[1]);
+   if (map == NULL) {
+     tmx_perror("Cannot load map");
+     return 1;
+   }
+
+Then foo bar baz:
 
 .. tabs::
 
@@ -184,9 +200,3 @@ Testing the tab group functionality:
    .. code-tab:: c raylib
 
          void raylib_tex_loader() {}
-
-
-.. _SDL 2: https://www.libsdl.org/
-.. _Allegro 5: https://liballeg.org/
-.. _raylib: https://www.raylib.com/
-.. _rpg/island.tmx: https://github.com/bjorn/tiled/tree/master/examples/rpg

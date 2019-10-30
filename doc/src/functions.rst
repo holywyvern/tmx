@@ -3,6 +3,8 @@ Functions
 
 **libTMX** provides a few functions to load maps and use the hasmaps. To access a loaded map, see :doc:`datastructure`.
 
+.. _load-functions:
+
 Load maps
 ---------
 
