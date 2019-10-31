@@ -174,7 +174,7 @@ display (window), and the main loop.
          }
 
 
-Now we can load the map and check for errors. libTMX offers :ref:`several means to load a map <load-functions>`,
+Now we can load the map and check for errors. **libTMX** offers :ref:`several means to load a map <load-functions>`,
 we will be using the simple :c:func:`tmx_load` function.
 
 .. code-block:: c
@@ -185,18 +185,97 @@ we will be using the simple :c:func:`tmx_load` function.
      return 1;
    }
 
-Then foo bar baz:
+The :c:func:`tmx_load` function returns a pointer to a :doc:`datastructure <datastructure>` that contains all the map
+informations.
+
+Now the map is loaded, except it is not entirely loaded, we need to load all the images referenced by the map.
+We could navigate the map :doc:`datastructure <datastructure>`, and for every image we meet, load it. But libTMX offers
+an easier way to do that without the hassle: :ref:`callback functions <image-autoload-autofree>`.
+
+| **libTMX** can use two callback functions to delegate the image loading and image freeing to your library/engine.
+| One callback to load: :c:data:`tmx_img_load_func`.
+| One callback to free: :c:data:`tmx_img_free_func`.
+| These callbacks **must be set BEFORE you call any load function**.
 
 .. tabs::
 
    .. code-tab:: c SDL 2
 
-         void SDL_tex_loader() {}
+         void* SDL_tex_loader(const char *path) {
+           return IMG_LoadTexture(ren, path);
+         }
+
+         /* Set the callback globs in the main function */
+         tmx_img_load_func = SDL_tex_loader;
+         tmx_img_free_func = (void (*)(void*))SDL_DestroyTexture;
+
+         tmx_map *map = tmx_load(argv[1]);
+         /* ... */
+         tmx_map_free(map);
 
    .. code-tab:: c Allegro 5
 
-         void Allegro5_tex_loader() {}
+         void* Allegro5_tex_loader(const char *path) {
+           ALLEGRO_BITMAP *res    = NULL;
+           ALLEGRO_PATH   *alpath = NULL;
+
+           if (!(alpath = al_create_path(path))) return NULL;
+
+           al_set_new_bitmap_format(ALLEGRO_PIXEL_FORMAT_ANY_WITH_ALPHA);
+           res = al_load_bitmap(al_path_cstr(alpath, ALLEGRO_NATIVE_PATH_SEP));
+
+           al_destroy_path(alpath);
+
+           return (void*)res;
+         }
+
+         /* Set the callback globs in the main function */
+         tmx_img_load_func = Allegro5_tex_loader;
+         tmx_img_free_func = (void (*)(void*))al_destroy_bitmap;
+
+         tmx_map *map = tmx_load(argv[1]);
+         /* ... */
+         tmx_map_free(map);
 
    .. code-tab:: c raylib
 
-         void raylib_tex_loader() {}
+         void* raylib_tex_loader(const char *path) {
+           Texture2D texture = LoadTexture(path);
+           Texture2D *returnValue = malloc(sizeof(Texture2D));
+           memcpy(returnValue, &texture, sizeof(Texture2D));
+           return returnValue;
+         }
+
+         void raylib_free_tex(void *ptr)
+         {
+           UnloadTexture(*((Texture2D*)ptr));
+           free(ptr);
+         }
+
+         /* Set the callback globs in the main function */
+         tmx_img_load_func = raylib_tex_loader;
+         tmx_img_free_func = raylib_free_tex;
+
+         tmx_map *map = tmx_load(argv[1]);
+         /* ... */
+         tmx_map_free(map);
+
+.. note::
+   It is better to load the image into a :term:`Texture` that can be drawn directly without overhead.
+
+
+Rendering
+---------
+
+In the datastructure, all the :term:`layers <Layer>` are stored in a :term:`Linked List` ordered from background
+to foreground, to make it easier to draw these layers in the correct order.
+
+Tile layers
+^^^^^^^^^^^
+
+Foo.
+
+Object layers
+^^^^^^^^^^^^^
+
+Bar.
