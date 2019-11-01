@@ -268,14 +268,104 @@ Rendering
 ---------
 
 In the datastructure, all the :term:`layers <Layer>` are stored in a :term:`Linked List` ordered from background
-to foreground, to make it easier to draw these layers in the correct order.
+to foreground, to make it easier to draw these layers in the correct order:
+
+.. code-block:: c
+
+   void draw_all_layers(tmx_map *map, tmx_layer *layers) {
+     while (layers) {
+       if (layers->visible) {
+
+         if (layers->type == L_GROUP) {
+           draw_all_layers(map, layers->content.group_head); // recursive call
+         }
+         else if (layers->type == L_OBJGR) {
+           draw_objects(layers->content.objgr); // Function to be implemented
+         }
+         else if (layers->type == L_IMAGE) {
+           draw_image_layer(layers->content.image, layer->opacity); // Function to be implemented
+         }
+         else if (layers->type == L_LAYER) {
+           draw_layer(map, layers); // Function to be implemented
+         }
+       }
+       layers = layers->next;
+     }
+   }
+
+Image Layers
+^^^^^^^^^^^^
+
+Foo.
+
+.. tabs::
+
+   .. code-tab:: c SDL 2
+
+      void draw_image_layer(tmx_image *image, float opacity) {
+        ;
+      }
+
+   .. code-tab:: c Allegro 5
+
+      void draw_image_layer(tmx_image *image, float opacity) {
+        ;
+      }
+
+   .. code-tab:: c raylib
+
+      void draw_image_layer(tmx_image *image, float opacity) {
+        ;
+      }
+
 
 Tile layers
 ^^^^^^^^^^^
 
-Foo.
+Bar.
+
+.. tabs::
+
+   .. code-tab:: c SDL 2
+
+      void draw_layer(tmx_map *map, tmx_layer *layer) {
+        ;
+      }
+
+   .. code-tab:: c Allegro 5
+
+      void draw_layer(tmx_map *map, tmx_layer *layer) {
+        ;
+      }
+
+   .. code-tab:: c raylib
+
+      void draw_layer(tmx_map *map, tmx_layer *layer) {
+        ;
+      }
+
 
 Object layers
 ^^^^^^^^^^^^^
 
-Bar.
+Baz.
+
+.. tabs::
+
+   .. code-tab:: c SDL 2
+
+      void draw_objects(tmx_object_group *objgr) {
+        ;
+      }
+
+   .. code-tab:: c Allegro 5
+
+      void draw_objects(tmx_object_group *objgr) {
+        ;
+      }
+
+   .. code-tab:: c raylib
+
+      void draw_objects(tmx_object_group *objgr) {
+        ;
+      }
