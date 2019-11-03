@@ -283,7 +283,7 @@ to foreground, to make it easier to draw these layers in the correct order:
            draw_objects(layers->content.objgr); // Function to be implemented
          }
          else if (layers->type == L_IMAGE) {
-           draw_image_layer(layers->content.image, layer->opacity); // Function to be implemented
+           draw_image_layer(layers->content.image); // Function to be implemented
          }
          else if (layers->type == L_LAYER) {
            draw_layer(map, layers); // Function to be implemented
@@ -302,14 +302,21 @@ Foo.
 
    .. code-tab:: c SDL 2
 
-      void draw_image_layer(tmx_image *image, float opacity) {
-        ;
+      void draw_image_layer(tmx_image *img) {
+        SDL_Rect dim;
+
+        dim.x = dim.y = 0;
+        SDL_QueryTexture((SDL_Texture*)img->resource_image, NULL, NULL, &(dim.w), &(dim.h));
+
+        SDL_RenderCopy(ren, (SDL_Texture*)img->resource_image, NULL, &dim);
       }
 
    .. code-tab:: c Allegro 5
 
       void draw_image_layer(tmx_image *image, float opacity) {
-        ;
+        ALLEGRO_BITMAP *bitmap = (ALLEGRO_BITMAP*)layers->content.image->resource_image;
+        ALLEGRO_COLOR tint = al_map_rgba_f(op, op, op, op);
+        al_draw_tinted_bitmap(bitmap, tint, 0, 0, 0);
       }
 
    .. code-tab:: c raylib
