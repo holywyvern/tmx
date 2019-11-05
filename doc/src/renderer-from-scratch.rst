@@ -79,7 +79,8 @@ display (window), and the main loop.
 
              if (e.type == SDL_QUIT) break;
 
-             SDL_RenderClear(ren);
+             render_map(map); // Function to be implemented
+             SDL_RenderPresent(ren);
            }
 
            SDL_RemoveTimer(timer_id);
@@ -135,7 +136,8 @@ display (window), and the main loop.
 
              if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break;
 
-             al_clear_to_color(al_map_rgb(0,0,0));
+             render_map(map); // Function to be implemented
+             al_flip_display();
            }
 
            al_destroy_timer(timer);
@@ -164,7 +166,7 @@ display (window), and the main loop.
 
            while (!WindowShouldClose()) {
              BeginDrawing();
-             ClearBackground(BLACK);
+             render_map(map); // Function to be implemented
              EndDrawing();
            }
 
@@ -267,6 +269,42 @@ an easier way to do that without the hassle: :ref:`callback functions <image-aut
 Rendering
 ---------
 
+Rendering a map is quite simple, clear the display to the background colour, then draw all the :term:`layers <Layer>`.
+
+.. tabs::
+
+   .. code-tab:: c SDL 2
+
+      void set_color(int color) {
+        unsigned char r, g, b;
+
+        r = (color >> 16) & 0xFF;
+        g = (color >>  8) & 0xFF;
+        b = (color)       & 0xFF;
+
+        SDL_SetRenderDrawColor(ren, r, g, b, SDL_ALPHA_OPAQUE);
+      }
+
+      void render_map(tmx_map *map) {
+        set_color(map->backgroundcolor);
+        SDL_RenderClear(ren);
+        draw_all_layers(map, map->ly_head); // Function to be implemented
+      }
+
+   .. code-tab:: c Allegro 5
+
+      void render_map(tmx_map *map) {
+        al_clear_to_color(int_to_al_color(map->backgroundcolor));
+        draw_all_layers(map, map->ly_head); // Function to be implemented
+      }
+
+   .. code-tab:: c raylib
+
+      void render_map(tmx_map *map) {
+        ClearBackground(ClearBackground(GetColor(map->backgroundcolor)));
+        draw_all_layers(map, map->ly_head); // Function to be implemented
+      }
+
 In the datastructure, all the :term:`layers <Layer>` are stored in a :term:`Linked List` ordered from background
 to foreground, to make it easier to draw these layers in the correct order:
 
@@ -296,35 +334,34 @@ to foreground, to make it easier to draw these layers in the correct order:
 Image Layers
 ^^^^^^^^^^^^
 
-Foo.
+This is a simplistic implementation, as it lacks support for the offsetting and the opacity to be complete.
 
 .. tabs::
 
    .. code-tab:: c SDL 2
 
-      void draw_image_layer(tmx_image *img) {
+      void draw_image_layer(tmx_image *image) {
         SDL_Rect dim;
-
         dim.x = dim.y = 0;
-        SDL_QueryTexture((SDL_Texture*)img->resource_image, NULL, NULL, &(dim.w), &(dim.h));
 
-        SDL_RenderCopy(ren, (SDL_Texture*)img->resource_image, NULL, &dim);
+        SDL_Texture *texture = (SDL_Texture*)image->resource_image;
+        SDL_QueryTexture(texture, NULL, NULL, &(dim.w), &(dim.h));
+        SDL_RenderCopy(ren, texture, NULL, &dim);
       }
 
    .. code-tab:: c Allegro 5
 
-      void draw_image_layer(tmx_image *image, float opacity) {
-        ALLEGRO_BITMAP *bitmap = (ALLEGRO_BITMAP*)layers->content.image->resource_image;
-        ALLEGRO_COLOR tint = al_map_rgba_f(op, op, op, op);
-        al_draw_tinted_bitmap(bitmap, tint, 0, 0, 0);
+      void draw_image_layer(tmx_image *image) {
+        ALLEGRO_BITMAP *bitmap = (ALLEGRO_BITMAP*)image->resource_image;
+        al_draw_bitmap(bitmap, 0, 0, 0);
       }
 
    .. code-tab:: c raylib
 
-      void draw_image_layer(tmx_image *image, float opacity) {
-        ;
+      void draw_image_layer(tmx_image *image) {
+        Texture2D *texture = (Texture2D*)image->resource_image;
+        DrawTexture(*texture, 0, 0, WHITE);
       }
-
 
 Tile layers
 ^^^^^^^^^^^
@@ -351,28 +388,136 @@ Bar.
         ;
       }
 
-
 Object layers
 ^^^^^^^^^^^^^
 
-Baz.
+In this section we will take advantage of the shape drawing functions provided by the library we are using, therefore we
+are limited by the availability of draw functions for each kind of shape.
 
 .. tabs::
 
    .. code-tab:: c SDL 2
 
-      void draw_objects(tmx_object_group *objgr) {
-        ;
+      void draw_polyline(double **points, double x, double y, int pointsc) {
+        int i;
+        for (i=1; i<pointsc; i++) {
+          SDL_RenderDrawLine(ren, x+points[i-1][0], y+points[i-1][1], x+points[i][0], y+points[i][1]);
+        }
       }
+
+      void draw_polygon(double **points, double x, double y, int pointsc) {
+        draw_polyline(points, x, y, pointsc);
+        if (pointsc > 2) {
+          SDL_RenderDrawLine(ren, x+points[0][0], y+points[0][1], x+points[pointsc-1][0], y+points[pointsc-1][1]);
+        }
+      }
+
+      void draw_objects(tmx_object_group *objgr) {
+        SDL_Rect rect;
+        set_color(objgr->color);
+        tmx_object *head = objgr->head;
+        while (head) {
+          if (head->visible) {
+            if (head->obj_type == OT_SQUARE) {
+              rect.x =     head->x;  rect.y =      head->y;
+              rect.w = head->width;  rect.h = head->height;
+              SDL_RenderDrawRect(ren, &rect);
+            }
+            else if (head->obj_type  == OT_POLYGON) {
+              draw_polygon(head->content.shape->points, head->x, head->y, head->content.shape->points_len);
+            }
+            else if (head->obj_type == OT_POLYLINE) {
+              draw_polyline(head->content.shape->points, head->x, head->y, head->content.shape->points_len);
+            }
+            else if (head->obj_type == OT_ELLIPSE) {
+              /* FIXME: no function in SDL2 */
+            }
+          }
+          head = head->next;
+        }
+      }
+
 
    .. code-tab:: c Allegro 5
 
+      #define LINE_THICKNESS 2.5
+
+      void draw_polyline(double **points, double x, double y, int pointsc, ALLEGRO_COLOR color) {
+        int i;
+        for (i=1; i<pointsc; i++) {
+          al_draw_line(x+points[i-1][0], y+points[i-1][1], x+points[i][0], y+points[i][1], color, LINE_THICKNESS);
+        }
+      }
+
+      void draw_polygone(double **points, double x, double y, int pointsc, ALLEGRO_COLOR color) {
+        draw_polyline(points, x, y, pointsc, color);
+        if (pointsc > 2) {
+          al_draw_line(x+points[0][0], y+points[0][1], x+points[pointsc-1][0], y+points[pointsc-1][1], color, LINE_THICKNESS);
+        }
+      }
+
       void draw_objects(tmx_object_group *objgr) {
-        ;
+        ALLEGRO_COLOR color = int_to_al_color(objgr->color);
+        tmx_object *head = objgr->head;
+        while (head) {
+          if (head->visible) {
+            if (head->obj_type == OT_SQUARE) {
+              al_draw_rectangle(head->x, head->y, head->x+head->width, head->y+head->height, color, LINE_THICKNESS);
+            }
+            else if (head->obj_type  == OT_POLYGON) {
+              draw_polygone(head->content.shape->points, head->x, head->y, head->content.shape->points_len, color);
+            }
+            else if (head->obj_type == OT_POLYLINE) {
+              draw_polyline(head->content.shape->points, head->x, head->y, head->content.shape->points_len, color);
+            }
+            else if (head->obj_type == OT_ELLIPSE) {
+              al_draw_ellipse(head->x + head->width/2.0, head->y + head->height/2.0, head->width/2.0, head->height/2.0, color, LINE_THICKNESS);
+            }
+          }
+          head = head->next;
+        }
       }
 
    .. code-tab:: c raylib
 
+      void draw_polyline(double **points, double x, double y, int pointsc) {
+        int i;
+        for (i=1; i<pointsc; i++) {
+          DrawLine(x+points[i-1][0], y+points[i-1][1], x+points[i][0], y+points[i][1], color);
+        }
+      }
+
+      void draw_polygon(double **points, double x, double y, int pointsc) {
+        draw_polyline(points, x, y, pointsc);
+        if (pointsc > 2) {
+          DrawLine(x+points[0][0], y+points[0][1], x+points[pointsc-1][0], y+points[pointsc-1][1], color);
+        }
+      }
+
       void draw_objects(tmx_object_group *objgr) {
-        ;
+        Rectangle rect;
+        set_color(objgr->color);
+        tmx_object *head = objgr->head;
+
+        while (head) {
+          if (head->visible) {
+            if (head->obj_type == OT_SQUARE) {
+              rect.x =   head->x;
+              rect.y =    head->y;
+              rect.width = head->width;
+              rect.height = head->height;
+              DrawRectangleLines(rect.x, rect.y, rect.width, rect.height, color);
+            }
+            else if (head->obj_type  == OT_POLYGON) {
+              draw_polygon(head->content.shape->points, head->x, head->y, head->content.shape->points_len);
+            }
+            else if (head->obj_type == OT_POLYLINE) {
+              draw_polyline(head->content.shape->points, head->x, head->y, head->content.shape->points_len);
+            }
+            else if (head->obj_type == OT_ELLIPSE) {
+              /* Ellipse function  */
+            }
+          }
+          head = head->next;
+        }
       }
