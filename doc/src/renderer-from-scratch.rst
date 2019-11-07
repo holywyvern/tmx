@@ -334,7 +334,7 @@ to foreground, to make it easier to draw these layers in the correct order:
 Image Layers
 ^^^^^^^^^^^^
 
-This is a simplistic implementation, as it lacks support for the offsetting and the opacity to be complete.
+This is a simplistic implementation, as it lacks support for the offsetting and the opacity properties to be complete.
 
 .. tabs::
 
@@ -344,7 +344,7 @@ This is a simplistic implementation, as it lacks support for the offsetting and 
         SDL_Rect dim;
         dim.x = dim.y = 0;
 
-        SDL_Texture *texture = (SDL_Texture*)image->resource_image;
+        SDL_Texture *texture = (SDL_Texture*)image->resource_image; // Texture loaded by libTMX
         SDL_QueryTexture(texture, NULL, NULL, &(dim.w), &(dim.h));
         SDL_RenderCopy(ren, texture, NULL, &dim);
       }
