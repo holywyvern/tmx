@@ -149,7 +149,9 @@ display (window), and the main loop.
 
    .. code-tab:: c raylib
 
+         #include <stdlib.h>
          #include <stdio.h>
+         #include <string.h>
          #include <tmx.h>
          #include <raylib.h>
 
@@ -366,26 +368,62 @@ This is a simplistic implementation, as it lacks support for the offsetting and 
 Tile layers
 ^^^^^^^^^^^
 
-Bar.
+.. code-block:: c
+
+   void draw_layer(tmx_map *map, tmx_layer *layer) {
+     unsigned long i, j;
+     unsigned int gid, x, y, w, h, flags;
+     float op;
+     tmx_tileset *ts;
+     tmx_image *im;
+     void* image;
+     op = layer->opacity;
+     for (i=0; i<map->height; i++) {
+       for (j=0; j<map->width; j++) {
+         gid = gid_clear_flags(layer->content.gids[(i*map->width)+j]);
+         if (map->tiles[gid] != NULL) {
+           ts = map->tiles[gid]->tileset;
+           im = map->tiles[gid]->image;
+           x  = map->tiles[gid]->ul_x;
+           y  = map->tiles[gid]->ul_y;
+           w  = ts->tile_width;
+           h  = ts->tile_height;
+           if (im) {
+             image = im->resource_image;
+           }
+           else {
+             image = ts->image->resource_image;
+           }
+           flags = gid_extract_flags(layer->content.gids[(i*map->width)+j]);
+           draw_tile(image, x, y, w, h, j*ts->tile_width, i*ts->tile_height, op, flags); // Function to be implemented
+         }
+       }
+     }
+   }
 
 .. tabs::
 
    .. code-tab:: c SDL 2
 
-      void draw_layer(tmx_map *map, tmx_layer *layer) {
-        ;
+      void draw_tile(void *image, unsigned int sx, unsigned int sy, unsigned int sw, unsigned int sh,
+                     unsigned int dx, unsigned int dy, float opacity, unsigned int flags) {
+        ALLEGRO_COLOR colour = al_map_rgba_f(opacity, opacity, opacity, opacity);
+        al_draw_tinted_bitmap_region((ALLEGRO_BITMAP*)image, colour, sx, sy, sw, sh, dx, dy, flags);
       }
 
    .. code-tab:: c Allegro 5
 
-      void draw_layer(tmx_map *map, tmx_layer *layer) {
-        ;
+      void draw_tile(void *image, unsigned int sx, unsigned int sy, unsigned int sw, unsigned int sh,
+                     unsigned int dx, unsigned int dy, float opacity, unsigned int flags) {
+        ALLEGRO_COLOR colour = al_map_rgba_f(opacity, opacity, opacity, opacity);
+        al_draw_tinted_bitmap_region((ALLEGRO_BITMAP*)image, colour, sx, sy, sw, sh, dx, dy, flags);
       }
 
    .. code-tab:: c raylib
 
-      void draw_layer(tmx_map *map, tmx_layer *layer) {
-        ;
+      void draw_tile(void *image, unsigned int sx, unsigned int sy, unsigned int sw, unsigned int sh,
+                     unsigned int dx, unsigned int dy, float opacity, unsigned int flags) {
+        DrawTextureRec((Texture2D*)image, (Rectangle) {sx, sy, sw, sh}, (Vector2) {dx, dy}, (Color) {opacity, opacity, opacity, opacity});
       }
 
 Object layers
@@ -436,7 +474,6 @@ are limited by the availability of draw functions for each kind of shape.
           head = head->next;
         }
       }
-
 
    .. code-tab:: c Allegro 5
 
@@ -502,8 +539,8 @@ are limited by the availability of draw functions for each kind of shape.
         while (head) {
           if (head->visible) {
             if (head->obj_type == OT_SQUARE) {
-              rect.x =   head->x;
-              rect.y =    head->y;
+              rect.x = head->x;
+              rect.y = head->y;
               rect.width = head->width;
               rect.height = head->height;
               DrawRectangleLines(rect.x, rect.y, rect.width, rect.height, color);
